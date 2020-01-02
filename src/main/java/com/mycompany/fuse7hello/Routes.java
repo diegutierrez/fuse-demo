@@ -25,7 +25,7 @@ public class Routes extends RouteBuilder {
 
         restConfiguration("servlet")
             .bindingMode(RestBindingMode.json)
-            .apiContextPath("/swagger") //swagger endpoint path; Final URL: Camel path + apiContextPath: /api/swagger
+            .apiContextPath("/swagger") 
             .apiContextRouteId("swagger")
 
             .contextPath("/api")
@@ -43,19 +43,16 @@ public class Routes extends RouteBuilder {
                 .setBody().body(()->new HelloResponse(greeting+" World!"))
                 .removeHeaders("*")
                 .endRest()
-            //"name" is an Exchange header
             .get("hello/{name}")
-                //swagger
                 .description("Hello with name")
                 .param().name("name").type(RestParamType.path).description("Name of the user").required(true).dataType("string").endParam()
-                .responseMessage().code(200).responseModel(HelloResponse.class).endResponseMessage() //OK
+                .responseMessage().code(200).responseModel(HelloResponse.class).endResponseMessage() 
 
                 .route()
                 .setBody(method(this,"setHelloWithName"))
                 .removeHeaders("*")
                 .endRest()
 
-            //Some additional APIs to test memory heavy or cpu intensive workloads
             .get("memory/{mb}")
                 .route()
                 .setBody().method(this,"createObject")
@@ -72,18 +69,15 @@ public class Routes extends RouteBuilder {
 
     }
 
-    //Get exchange header and add to response
     public HelloResponse setHelloWithName(@Simple("${properties:my.greeting} ${header.name}!") String message){
         return new HelloResponse(message);
     }
 
-    //Create a big object on heap
     public Integer createObject(@Header("mb") Integer mb){
         byte[] one = new byte[mb*1024*1024];
         return mb;
     }
 
-    //Do some cpu intensive calculation
     public Long cpuLoad(@Header("iteration") Long iteration){
         double response =0.5;
         long start = System.currentTimeMillis();
@@ -96,7 +90,6 @@ public class Routes extends RouteBuilder {
         return time;
     }
 
-    //Run cpu intensive tasks on multiple threads
     public Long multiThreadCpuLoad(@Header("threads") int threads, @Header("iteration") Long iteration) throws InterruptedException{
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         long start = System.currentTimeMillis();
